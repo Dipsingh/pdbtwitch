@@ -39,7 +39,7 @@ class Environment:
             with open(os.path.join(loc, "config.toml")) as source:
                 return toml.load(source)
         except IOError:
-            raise ValueError("config.toml file not found.")
+            raise ValueError(f"config.toml file not found: {loc}")
 
 
 environment = Environment()
