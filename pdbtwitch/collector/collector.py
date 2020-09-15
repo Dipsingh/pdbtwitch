@@ -6,15 +6,9 @@ import matplotlib.pyplot as plt
 from pdbtwitch.config.config import environment
 from pdbtwitch.helpers.helper import extract_city, build_city_loc_mapping, extract_long_lat
 from shapely.geometry import Point
-from bokeh.models import HoverTool
 from bokeh.plotting import figure
-from bokeh.layouts import gridplot
 from bokeh.layouts import column
-from bokeh.models import ColumnDataSource, Panel, Tabs, Button
-from bokeh.palettes import Spectral6
-from bokeh.transform import linear_cmap
-from bokeh.models import ColorBar, PrintfTickFormatter, LabelSet, Select, CustomJS
-from bokeh.models import DataTable, TableColumn
+from bokeh.models import ColumnDataSource, LabelSet, DataTable, TableColumn, HoverTool
 
 
 class PeeringData():
@@ -60,7 +54,8 @@ class PeeringData():
         return self.df.loc[self.df.is_rs_peer].shape[0]
 
     def plot_data_table(self):
-        source = ColumnDataSource(self.df)
+        source = ColumnDataSource(self.df[['name', 'asn', 'ipaddr6', 'ipaddr4',
+                                           'speed', 'is_rs_peer', 'status']])
         columns = [
             TableColumn(field="name", title="IX Name"),
             TableColumn(field="asn", title="ASN"),

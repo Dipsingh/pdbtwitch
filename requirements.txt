@@ -6,3 +6,4 @@ descartes
 geopandas
 geotext
 matplotlib
+geopy
