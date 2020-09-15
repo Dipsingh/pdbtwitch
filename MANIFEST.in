@@ -1,4 +1,4 @@
 # Include the README
 include *.md
 include requirements.txt
-include data/config.toml
+include pdbtwitch/data/config.toml
