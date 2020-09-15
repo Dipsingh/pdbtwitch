@@ -1,0 +1,16 @@
+title = "Twitch Peering DB Data"
+
+[project]
+name = "twitch peering db"
+version = "1.0"
+author = "xyz"
+
+[config]
+asn=46489
+
+[query]
+asn_api = 'https://peeringdb.com/api/net?asn={asn_no}'
+net_api = 'https://peeringdb.com/api/netixlan?net_id={id_no}'
+
+[path]
+csv_dir = ''

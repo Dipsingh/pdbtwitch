@@ -1,0 +1,15 @@
+.*cache
+.tox
+_tox.ini
+.coverage
+*.egg-info
+*.egg
+build
+test/__pycache__
+__pycache__/
+tmp
+*.pyc
+*.swp
+dist
+.python-version
+.idea
