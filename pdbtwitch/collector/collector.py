@@ -1,7 +1,11 @@
 import requests
 import pandas as pd
 from textwrap import dedent
+import geopandas as gpd
+import matplotlib.pyplot as plt
 from pdbtwitch.config.config import environment
+from pdbtwitch.helpers.helper import extract_city, build_city_loc_mapping, extract_long_lat
+from shapely.geometry import Point
 from bokeh.models import HoverTool
 from bokeh.plotting import figure
 from bokeh.layouts import gridplot
@@ -106,3 +110,46 @@ class PeeringData():
                           x_offset=-13.5, y_offset=0, source=source, render_mode='canvas')
         p1.add_layout(labels)
         return p1
+
+    def plot_port_speed_breakdown(self):
+        counts = self.df.speed.value_counts().values
+        categories = ['10Gbps', '20Gbps', '100Gbps', '30Gbps', '50Gbps', '300Gbps']
+        source = ColumnDataSource(dict(x=['10Gbps', '20Gbps', '100Gbps', '30Gbps', '50Gbps', '300Gbps'],
+                                       y=[self.df.speed.value_counts()]))
+        p = figure(x_range=categories, plot_height=400, plot_width=600, title="Public IX Port Breakdown Summary",
+                   toolbar_location=None, tools="")
+        p.vbar(x=categories, top=counts, width=0.7)
+        p.xgrid.grid_line_color = None
+        p.yaxis.axis_label = 'Count'
+        p.y_range.start = 0
+        labels = LabelSet(x='x', y='y', text='y', level='glyph',
+                          x_offset=-13.5, y_offset=0, source=source, render_mode='canvas')
+        hover = HoverTool(
+            tooltips=[
+                ("Count", "$y"),
+            ],
+        )
+        p.add_tools(hover)
+        p.add_layout(labels)
+
+        return column(p)
+
+    def plot_map(self):
+        self.df['city'] = self.df.name.apply(extract_city)
+        city_list = self.df['city'].unique()
+        city_dict = build_city_loc_mapping(city_list)
+        self.df[['lat', 'long']] = self.df.apply(extract_long_lat, city_dict=city_dict,
+                                                 axis=1, result_type='expand')
+        self.df["Coordinates"] = list(zip(self.df.long, self.df.lat))
+        self.df["Coordinates"] = self.df["Coordinates"].apply(Point)
+
+        gdf = gpd.GeoDataFrame(self.df[['city', 'lat', 'long', 'Coordinates']], geometry="Coordinates")
+        world = gpd.read_file(gpd.datasets.get_path("naturalearth_lowres"))
+        world = world.set_index("iso_a3")
+        fig, gax = plt.subplots(figsize=(20, 20))
+        world.plot(ax=gax, edgecolor='grey', color='white')
+        gax.set_xlabel('longitude')
+        gax.set_ylabel('latitude')
+        gdf.plot(ax=gax, color='red', alpha=0.5)
+        gax.spines['top'].set_visible(False)
+        gax.spines['right'].set_visible(False)

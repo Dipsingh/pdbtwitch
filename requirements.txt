@@ -2,4 +2,7 @@ bokeh>=2.1.1
 pandas>=0.25.2
 toml
 requests
-
+descartes
+geopandas
+geotext
+matplotlib
