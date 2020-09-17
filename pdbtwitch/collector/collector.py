@@ -1,5 +1,8 @@
 import requests
 import pandas as pd
+import os
+import csv
+import logging
 from textwrap import dedent
 import geopandas as gpd
 import matplotlib.pyplot as plt
@@ -9,6 +12,8 @@ from shapely.geometry import Point
 from bokeh.plotting import figure
 from bokeh.layouts import column
 from bokeh.models import ColumnDataSource, LabelSet, DataTable, TableColumn, HoverTool
+
+_logger = logging.getLogger("peeringdb")
 
 
 class PeeringData():
@@ -132,7 +137,19 @@ class PeeringData():
     def plot_map(self):
         self.df['city'] = self.df.name.apply(extract_city)
         city_list = self.df['city'].unique()
-        city_dict = build_city_loc_mapping(city_list)
+
+        _root_dir = os.path.abspath(os.path.dirname(__file__))
+        try:
+            loc = os.path.join(_root_dir, '..', 'data')
+            with open(os.path.join(loc, "city_dict.csv")) as csv_file:
+                reader = csv.reader(csv_file)
+                city_dict = {}
+                for row in reader:
+                    city_dict[row[0]] = {'lat': float(row[1]), 'long': float(row[2])}
+        except FileNotFoundError as e:
+            _logger.info("File city_dict.csv not found.Fetching the data")
+            city_dict = build_city_loc_mapping(city_list)
+
         self.df[['lat', 'long']] = self.df.apply(extract_long_lat, city_dict=city_dict,
                                                  axis=1, result_type='expand')
         self.df["Coordinates"] = list(zip(self.df.long, self.df.lat))
